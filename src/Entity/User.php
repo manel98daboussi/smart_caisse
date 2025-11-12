@@ -6,11 +6,15 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ApiResource]
-class User
+#[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+class User implements PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -26,8 +30,7 @@ class User
     #[ORM\Column(length:255)]
     private ?string $password = null;
 
-    #[ORM\Column(length:50)]
-    private string $role = 'caissier';
+   
 
     #[ORM\Column(type: 'boolean')]
     private bool $actif = true;
@@ -40,6 +43,12 @@ class User
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: CommandeTable::class)]
     private Collection $commandes;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $prenom = null;
+
+    #[ORM\Column(type: Types::ARRAY, nullable: true)]
+    private ?array $roles = null;
 
     public function __construct()
     {
@@ -58,9 +67,6 @@ class User
 
     public function getPassword(): ?string { return $this->password; }
     public function setPassword(string $password): self { $this->password = $password; return $this; }
-
-    public function getRole(): string { return $this->role; }
-    public function setRole(string $role): self { $this->role = $role; return $this; }
 
     public function isActif(): bool { return $this->actif; }
     public function setActif(bool $actif): self { $this->actif = $actif; return $this; }
@@ -116,6 +122,30 @@ class User
                 $commande->setUser(null);
             }
         }
+        return $this;
+    }
+
+    public function getPrenom(): ?string
+    {
+        return $this->prenom;
+    }
+
+    public function setPrenom(?string $prenom): static
+    {
+        $this->prenom = $prenom;
+
+        return $this;
+    }
+
+    public function getRoles(): ?array
+    {
+        return $this->roles;
+    }
+
+    public function setRoles(?array $roles): static
+    {
+        $this->roles = $roles;
+
         return $this;
     }
 }
