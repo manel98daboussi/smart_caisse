@@ -8,46 +8,61 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']]
+)]
+
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length:100)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $nom = null;
 
     #[ORM\Column(length:150, unique:true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $email = null;
 
     #[ORM\Column(length:255)]
+    #[Groups(['user:write'])]
     private ?string $password = null;
 
    
 
     #[ORM\Column(type: 'boolean')]
+    #[Groups(['user:read', 'user:write'])]
     private bool $actif = true;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Session::class)]
+    #[Groups(['user:read'])]
     private Collection $sessions;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Vente::class)]
+    #[Groups(['user:read'])]
     private Collection $ventes;
 
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: CommandeTable::class)]
+    #[Groups(['user:read'])]
     private Collection $commandes;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?string $prenom = null;
 
     #[ORM\Column(type: Types::ARRAY, nullable: true)]
+    #[Groups(['user:read', 'user:write'])]
     private ?array $roles = null;
 
     public function __construct()
