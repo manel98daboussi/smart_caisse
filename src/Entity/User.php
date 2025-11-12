@@ -10,6 +10,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
@@ -19,7 +20,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 )]
 
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
-class User implements PasswordAuthenticatedUserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -63,7 +64,7 @@ class User implements PasswordAuthenticatedUserInterface
 
     #[ORM\Column(type: Types::ARRAY, nullable: true)]
     #[Groups(['user:read', 'user:write'])]
-    private ?array $roles = null;
+    private ?array $roles = [];
 
     public function __construct()
     {
@@ -152,9 +153,16 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getRoles(): ?array
+    /**
+     * @see UserInterface
+     */
+    public function getRoles(): array
     {
-        return $this->roles;
+        $roles = $this->roles ?? [];
+        // guarantee every user at least has ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
     }
 
     public function setRoles(?array $roles): static
@@ -162,5 +170,30 @@ class User implements PasswordAuthenticatedUserInterface
         $this->roles = $roles;
 
         return $this;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getUserIdentifier(): string
+    {
+        return (string) $this->email;
+    }
+
+    /**
+     * @see UserInterface
+     */
+    public function getSalt(): ?string
+    {
+        return null;
     }
 }
