@@ -1,0 +1,39 @@
+api_platform:
+    title: API Smart Caisse
+    description: Bienvenue sur L'API SMART CAISSE
+    enable_profiler: true
+    version: 1.0.0
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+        text: [text/plain; charset=utf-8]
+        pdf:  [application/pdf]
+        octet-stream: ['application/octet-stream']
+        multipart: ['multipart/form-data']
+        xml:      ['application/xml', 'text/xml']
+        yaml:     ['application/x-yaml']
+        csv:      ['text/csv']
+        html:     ['text/html']
+        excel: ['application/vnd.ms.excel']
+        form: ['application/x-www-form-urlencoded']
+    docs_formats:
+        jsonld: ['application/ld+json']
+        jsonopenapi: ['application/vnd.openapi+json']
+        html: ['text/html']
+    defaults:
+        stateless: false
+        cache_headers:
+            vary: ['Content-Type', 'Authorization', 'Origin']
+        extra_properties:
+            standard_put: true
+            rfc_7807_compliant_errors: true
+    eager_loading:
+        max_joins: 10
+    use_symfony_listeners: true
+    swagger:
+      api_keys:
+        JWT:
+          name: Authorization
+          type: header
+    # graphql:
+    #   enabled: true 
