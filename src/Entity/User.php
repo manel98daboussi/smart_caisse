@@ -22,6 +22,19 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements PasswordAuthenticatedUserInterface, UserInterface
 {
+    // Predefined roles
+    const ROLE_ADMIN = 'ROLE_ADMIN';
+    const ROLE_CASHIER = 'ROLE_CASHIER';
+    const ROLE_SERVER = 'ROLE_SERVER';
+    const ROLE_USER = 'ROLE_USER';
+
+    const ROLES_HIERARCHY = [
+        self::ROLE_ADMIN => [self::ROLE_CASHIER, self::ROLE_SERVER, self::ROLE_USER],
+        self::ROLE_CASHIER => [self::ROLE_USER],
+        self::ROLE_SERVER => [self::ROLE_USER],
+        self::ROLE_USER => []
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -233,6 +246,38 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
 
     public function eraseCredentials(): void
     {
-        // Si tu stockes des données sensibles temporaires (ex: plainPassword), efface-les ici.
+        // If you store any temporary, sensitive data (e.g. plain password), clear it here.
+    }
+
+    /**
+     * Check if user has a specific role
+     */
+    public function hasRole(string $role): bool
+    {
+        return in_array($role, $this->getRoles());
+    }
+
+    /**
+     * Check if user has admin role
+     */
+    public function isAdmin(): bool
+    {
+        return $this->hasRole(self::ROLE_ADMIN);
+    }
+
+    /**
+     * Check if user has cashier role
+     */
+    public function isCashier(): bool
+    {
+        return $this->hasRole(self::ROLE_CASHIER) || $this->isAdmin();
+    }
+
+    /**
+     * Check if user has server role
+     */
+    public function isServer(): bool
+    {
+        return $this->hasRole(self::ROLE_SERVER) || $this->isAdmin();
     }
 }
