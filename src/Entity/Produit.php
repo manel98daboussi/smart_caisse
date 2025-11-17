@@ -30,14 +30,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
         ),
 
-        new Get(
-            uriTemplate: '/produits/categories',
-            name: 'api_produits_categories',
-            openapi: new Operation(
-                summary: "Récupérer les catégories des produits",
-                description: "Récupérer les catégories des produits",
-            )
-        ),
+     
         new Get(
             uriTemplate: '/produits/best-selling-products',
             name: 'api_produits_best_selling_products',
@@ -82,24 +75,22 @@ class Produit
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups(['produit:read'])]
+    #[Groups(['produit:read','categorie:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 150)]
-    #[Groups(['produit:read', 'produit:write'])]
+    #[Groups(['produit:read', 'produit:write','categorie:read'])]
     private ?string $nom = null;
 
     #[ORM\Column(type: 'float')]
-    #[Groups(['produit:read', 'produit:write'])]
+    #[Groups(['produit:read', 'produit:write','categorie:read'])]
     private float $prix = 0.0;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['produit:read', 'produit:write'])]
+    #[Groups(['produit:read', 'produit:write','categorie:read'])]
     private int $stock = 0;
 
-    #[ORM\Column(length: 100, nullable: true)]
-    #[Groups(['produit:read', 'produit:write'])]
-    private ?string $categorie = null;
+
 
     #[ORM\Column(type: 'float')]
     #[Groups(['produit:read', 'produit:write'])]
@@ -121,6 +112,10 @@ class Produit
     #[ORM\Column(type: 'datetime', nullable: true)]
     #[Groups(['produit:read', 'produit:write'])]
     private ?\DateTimeInterface $dateFinRemise = null;
+
+    #[ORM\ManyToOne(inversedBy: 'produits')]
+    #[Groups(['produit:read', 'produit:write'])]
+    private ?Categorie $categorie = null;
 
     public function getId(): ?int
     {
@@ -167,16 +162,7 @@ class Produit
         return $this;
     }
 
-    public function getCategorie(): ?string
-    {
-        return $this->categorie;
-    }
-    public function setCategorie(?string $categorie): self
-    {
-        $this->categorie = $categorie;
-        return $this;
-    }
-
+   
     public function getTva(): float
     {
         return $this->tva;
@@ -254,5 +240,17 @@ class Produit
             return $this->prix * (1 - $this->remise / 100);
         }
         return $this->prix;
+    }
+
+    public function getCategorie(): ?Categorie
+    {
+        return $this->categorie;
+    }
+
+    public function setCategorie(?Categorie $categorie): static
+    {
+        $this->categorie = $categorie;
+
+        return $this;
     }
 }
