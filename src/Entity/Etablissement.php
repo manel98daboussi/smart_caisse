@@ -2,34 +2,92 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use App\Repository\EtablissementRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use App\Entity\TableQR;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\OpenApi\Model\Operation;
+use App\Repository\EtablissementRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: EtablissementRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['etablissement:read']],
+    denormalizationContext: ['groups' => ['etablissement:write']],
+    shortName: 'Etablissements',
+    operations:[
+        new GetCollection(
+            uriTemplate:'/etablissements',
+            order: ['id' => 'DESC'],
+            openapi: new Operation(
+                summary: 'Récupérer les établissements',
+                description:  'Récupérer les établissements',
+            )
+            
+        ),
+      new Post(
+            uriTemplate: '/etablissements',
+            openapi: new Operation(
+                summary: 'Ajouter une établissement',
+                description: 'Ajouter une établissement'
+            )
+        ),
+        new Get(
+            uriTemplate: '/etablissements/{id}',
+            openapi: new Operation(
+                description: 'Récupérer une établissement par ID',
+                summary: 'Récupérer une établissement par ID'
+            )
+        ),
+
+        new Patch(
+            uriTemplate: '/etablissements/{id}',
+            openapi: new Operation(
+                description: 'Modifier une établissement par ID',
+                summary: 'Modifier une établissement par ID'
+            )
+        ),
+        new Delete(
+            uriTemplate: '/etablissements/{id}',
+            openapi: new Operation(
+                description: 'Supprimer une établissement par ID',
+                summary: 'Supprimer une établissement par ID'
+            )
+        ),
+    ]
+)]
 class Etablissement
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['etablissement:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length:150)]
+    #[Groups(['etablissement:read', 'etablissement:write'])]
     private ?string $nom = null;
 
     #[ORM\Column(length:255)]
+    #[Groups(['etablissement:read', 'etablissement:write'])]
     private ?string $adresse = null;
 
     #[ORM\Column(length:150, nullable:true)]
+    #[Groups(['etablissement:read', 'etablissement:write'])]
     private ?string $email = null;
 
     #[ORM\Column(length:50, nullable:true)]
+    #[Groups(['etablissement:read', 'etablissement:write'])]
     private ?string $telephone = null;
 
     #[ORM\OneToMany(mappedBy: 'etablissement', targetEntity: TableQR::class)]
+    #[Groups(['etablissement:read'])]
     private Collection $tables;
 
     public function __construct()

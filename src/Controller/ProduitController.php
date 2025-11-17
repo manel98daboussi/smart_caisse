@@ -3,29 +3,32 @@
 namespace App\Controller;
 
 use App\Entity\Produit;
+use App\Service\RapportService;
 use App\Repository\ProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
-#[Route('/api/produits')]
+#[Route('/api/produits','api_produits_')]
 class ProduitController extends AbstractController
 {
     private EntityManagerInterface $entityManager;
     private ProduitRepository $produitRepository;
-
+    private RapportService $rapportService;
     public function __construct(
         EntityManagerInterface $entityManager,
-        ProduitRepository $produitRepository
+        ProduitRepository $produitRepository,
+        RapportService $rapportService
     ) {
         $this->entityManager = $entityManager;
         $this->produitRepository = $produitRepository;
+        $this->rapportService = $rapportService;
     }
 
-    #[Route('', name: 'produit_list', methods: ['GET'])]
+    #[Route('', name: 'list', methods: ['GET'])]
     public function list(Request $request): JsonResponse
     {
         $categorie = $request->query->get('categorie');
@@ -52,13 +55,13 @@ class ProduitController extends AbstractController
         return $this->json($produits);
     }
 
-    #[Route('/{id}', name: 'produit_get', methods: ['GET'])]
+    #[Route('/{id}', name: 'produits', methods: ['GET'])]
     public function get(Produit $produit): JsonResponse
     {
         return $this->json($produit);
     }
 
-    #[Route('', name: 'produit_create', methods: ['POST'])]
+    #[Route('', name: 'produits', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -86,7 +89,7 @@ class ProduitController extends AbstractController
         return $this->json($produit, 201);
     }
 
-    #[Route('/{id}', name: 'produit_update', methods: ['PUT'])]
+    #[Route('/{id}', name: 'produits', methods: ['PUT'])]
     public function update(Produit $produit, Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -132,7 +135,7 @@ class ProduitController extends AbstractController
         return $this->json($produit);
     }
 
-    #[Route('/{id}', name: 'produit_delete', methods: ['DELETE'])]
+    #[Route('/{id}', name: 'produits', methods: ['DELETE'])]
     public function delete(Produit $produit): JsonResponse
     {
         $this->entityManager->remove($produit);
@@ -141,7 +144,7 @@ class ProduitController extends AbstractController
         return $this->json(['message' => 'Product deleted successfully']);
     }
 
-    #[Route('/categories', name: 'produit_categories', methods: ['GET'])]
+    #[Route('/categories', name: 'categories', methods: ['GET'])]
     public function categories(): JsonResponse
     {
         $qb = $this->entityManager->createQueryBuilder();
@@ -154,5 +157,13 @@ class ProduitController extends AbstractController
         $categories = $qb->getQuery()->getSingleColumnResult();
 
         return $this->json($categories);
+    }
+
+    #[Route('/best-selling-products', name: 'best_selling_products', methods: ['GET'])]
+    public function getBestSellingProducts(): JsonResponse
+    {
+        $products = $this->rapportService->getBestSellingProducts();
+        
+        return $this->json($products);
     }
 }

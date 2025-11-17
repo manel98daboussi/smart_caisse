@@ -7,7 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api/dashboard')]
+#[Route('/api/ventes','api_ventes_')]
 class DashboardController extends AbstractController
 {
     private RapportService $rapportService;
@@ -17,24 +17,23 @@ class DashboardController extends AbstractController
         $this->rapportService = $rapportService;
     }
 
-    #[Route('/stats', name: 'dashboard_stats', methods: ['GET'])]
+    #[Route('/stats', name: 'stats', methods: ['GET'])]
     public function getStats(): JsonResponse
     {
         $stats = $this->rapportService->getDashboardStats();
-        
-        return $this->json($stats);
+        return $this->json($stats ??[]);
     }
 
-    #[Route('/daily-report/{date}', name: 'daily_report', methods: ['GET'])]
-    public function getDailyReport(string $date): JsonResponse
+    #[Route('/daily-report/{dateVente}', name: 'daily_report', methods: ['GET'])]
+    public function getDailyReport(string $dateVente): JsonResponse
     {
-        $reportDate = new \DateTime($date);
+        $reportDate = new \DateTime($dateVente);
         $report = $this->rapportService->getDailyReport($reportDate);
         
         return $this->json($report);
     }
 
-    #[Route('/sales-history', name: 'sales_history', methods: ['GET'])]
+    #[Route('/history', name: 'history', methods: ['GET'])]
     public function getSalesHistory(): JsonResponse
     {
         // Get page from query parameters, default to 1
@@ -44,11 +43,5 @@ class DashboardController extends AbstractController
         return $this->json($history);
     }
 
-    #[Route('/best-selling-products', name: 'best_selling_products', methods: ['GET'])]
-    public function getBestSellingProducts(): JsonResponse
-    {
-        $products = $this->rapportService->getBestSellingProducts();
-        
-        return $this->json($products);
-    }
+    
 }
